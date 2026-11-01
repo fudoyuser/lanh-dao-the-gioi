@@ -30,7 +30,7 @@
   .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   h1 { font-size: clamp(1.5rem, 4vw, 2.1rem); margin: 0; letter-spacing: -0.02em; }
   .sub { color: var(--muted); margin: 4px 0 0; }
-  .theme-btn { border: 1px solid var(--line); background: var(--surface); color: var(--text); border-radius: 999px; padding: 6px 12px; cursor: pointer; font: inherit; }
+  .theme-btn { white-space: nowrap; border: 1px solid var(--line); background: var(--surface); color: var(--text); border-radius: 999px; padding: 6px 12px; cursor: pointer; font: inherit; }
   .countries { display: flex; gap: 8px; overflow-x: auto; padding: 16px 0 4px; scrollbar-width: none; }
   .country { flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--text); border-radius: 999px; padding: 8px 14px; font: inherit; cursor: pointer; white-space: nowrap; }
   .country[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -95,7 +95,10 @@
         <h1>Lãnh đạo Thế giới</h1>
         <p class="sub">Chức vụ và quê quán của quan chức, lãnh đạo các quốc gia.</p>
       </div>
-      <button class="theme-btn" id="themeBtn" type="button" aria-label="Đổi giao diện sáng/tối">Sáng / Tối</button>
+      <div class="row" style="flex-wrap:nowrap">
+        <a class="theme-btn" href="quiz.html" style="text-decoration:none">Quiz</a>
+        <button class="theme-btn" id="themeBtn" type="button" aria-label="Đổi giao diện sáng/tối">◑ Giao diện</button>
+      </div>
     </div>
     <nav class="countries" id="countries" aria-label="Chọn quốc gia"></nav>
   </header>
