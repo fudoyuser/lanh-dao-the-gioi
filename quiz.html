@@ -99,8 +99,8 @@
   const TYPES = {
     hometown: {
       label: "Quê quán",
-      make() {
-        const p = pick(withHome, 1)[0];
+      pool: () => withHome,
+      make(p) {
         const wrong = pick(allHomes.filter((h) => h !== p.hometown), 3);
         return { kind: "Quê quán", text: `${p.name} quê ở đâu?`, sub: mainPos(p),
           answer: p.hometown, options: shuffle([p.hometown, ...wrong]),
@@ -109,8 +109,8 @@
     },
     position: {
       label: "Chức vụ",
-      make() {
-        const p = pick(people, 1)[0];
+      pool: () => people,
+      make(p) {
         const wrong = pick(allPos.filter((x) => x !== mainPos(p)), 3);
         return { kind: "Chức vụ", text: `${p.name} hiện giữ chức vụ nào?`, sub: "",
           answer: mainPos(p), options: shuffle([mainPos(p), ...wrong]),
@@ -119,8 +119,8 @@
     },
     who: {
       label: "Ai là ai",
-      make() {
-        const p = pick(uniquePos, 1)[0];
+      pool: () => uniquePos,
+      make(p) {
         const wrong = pick(people.filter((x) => x.name !== p.name), 3).map((x) => x.name);
         return { kind: "Ai là ai", text: `Ai đang giữ chức: ${mainPos(p)}?`, sub: "",
           answer: p.name, options: shuffle([p.name, ...wrong]),
@@ -129,8 +129,8 @@
     },
     fromWhere: {
       label: "Đồng hương",
-      make() {
-        const p = pick(withHome, 1)[0];
+      pool: () => withHome,
+      make(p) {
         const wrong = pick(withHome.filter((x) => x.hometown !== p.hometown), 3).map((x) => x.name);
         return { kind: "Đồng hương", text: `Lãnh đạo nào dưới đây quê ở ${p.hometown}?`, sub: "",
           answer: p.name, options: shuffle([p.name, ...wrong]),
@@ -150,8 +150,8 @@
       <div class="opt-group" id="types">${Object.entries(TYPES).map(([k, t]) =>
         `<button class="chip" type="button" data-t="${k}" aria-pressed="${settings.types.includes(k)}">${t.label}</button>`).join("")}</div>
       <div class="muted">Số câu</div>
-      <div class="opt-group" id="counts">${[5, 10, 20].map((n) =>
-        `<button class="chip" type="button" data-n="${n}" aria-pressed="${settings.count === n}">${n} câu</button>`).join("")}</div>
+      <div class="opt-group" id="counts">${[5, 10, 20, 0].map((n) =>
+        `<button class="chip" type="button" data-n="${n}" aria-pressed="${settings.count === n}">${n ? n + " câu" : `Tất cả (${poolSize()} câu)`}</button>`).join("")}</div>
       <div class="row" style="align-items:center">
         <button class="btn" id="go" type="button">Bắt đầu</button>
         ${best ? `<span class="best">Kỷ lục của bạn: ${esc(best)}</span>` : ""}
@@ -169,15 +169,16 @@
     app.querySelector("#go").onclick = start;
   }
 
+  // Mỗi (dạng câu hỏi, người) là một câu duy nhất → "Tất cả" = ôn trọn bộ, không trùng.
+  function allPairs() {
+    return settings.types.flatMap((t) => TYPES[t].pool().map((p) => [t, p]));
+  }
+  function poolSize() { return allPairs().length; }
+
   function start() {
-    const qs = [], seen = new Set();
-    let guard = 0;
-    while (qs.length < settings.count && guard++ < 500) {
-      const t = settings.types[Math.floor(Math.random() * settings.types.length)];
-      const q = TYPES[t].make();
-      if (seen.has(q.text)) continue;
-      seen.add(q.text); qs.push(q);
-    }
+    const pairs = shuffle(allPairs());
+    const chosen = settings.count ? pairs.slice(0, settings.count) : pairs;
+    const qs = chosen.map(([t, p]) => TYPES[t].make(p));
     quiz = { qs, i: 0, score: 0, answers: [] };
     question();
   }
