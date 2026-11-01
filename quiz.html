@@ -87,6 +87,9 @@
   const people = D.people;
   const withHome = people.filter((p) => p.hometown);
   const allHomes = [...new Set(withHome.map((p) => p.hometown))];
+  const withOld = people.filter((p) => p.oldProvince);
+  const allOld = [...new Set(withOld.map((p) => p.oldProvince))];
+  const homeText = (p) => (p.hometownDetail ? lc(p.hometownDetail) : p.hometown) + (p.oldProvince ? ` (tỉnh cũ: ${p.oldProvince})` : "");
   const mainPos = (p) => p.positions[0];
   const lc = (s) => s.charAt(0).toLowerCase() + s.slice(1);
   const posCount = {};
@@ -104,7 +107,7 @@
         const wrong = pick(allHomes.filter((h) => h !== p.hometown), 3);
         return { kind: "Quê quán", text: `${p.name} quê ở đâu?`, sub: mainPos(p),
           answer: p.hometown, options: shuffle([p.hometown, ...wrong]),
-          explain: `${p.name} quê ${p.hometownDetail ? lc(p.hometownDetail) : p.hometown}.` };
+          explain: `${p.name} quê ${homeText(p)}.` };
       }
     },
     position: {
@@ -124,7 +127,18 @@
         const wrong = pick(people.filter((x) => x.name !== p.name), 3).map((x) => x.name);
         return { kind: "Ai là ai", text: `Ai đang giữ chức: ${mainPos(p)}?`, sub: "",
           answer: p.name, options: shuffle([p.name, ...wrong]),
-          explain: `Đó là ${p.name}${p.hometown ? ", quê " + p.hometown : ""}.` };
+          explain: `Đó là ${p.name}${p.hometown ? ", quê " + p.hometown + (p.oldProvince ? ` (${p.oldProvince} cũ)` : "") : ""}.` };
+      }
+    },
+    oldProvince: {
+      label: "Tỉnh cũ",
+      pool: () => withOld,
+      make(p) {
+        const wrong = pick(allOld.filter((h) => h !== p.oldProvince), 3);
+        return { kind: "Tỉnh cũ", text: `Trước sáp nhập năm 2025, quê ${p.name} thuộc tỉnh/thành nào?`,
+          sub: `Nay thuộc ${p.hometown} · ${mainPos(p)}`,
+          answer: p.oldProvince, options: shuffle([p.oldProvince, ...wrong]),
+          explain: `${p.name} quê ${p.oldProvince} cũ, nay thuộc ${p.hometownDetail ? lc(p.hometownDetail) : p.hometown}.` };
       }
     },
     fromWhere: {
@@ -134,12 +148,12 @@
         const wrong = pick(withHome.filter((x) => x.hometown !== p.hometown), 3).map((x) => x.name);
         return { kind: "Đồng hương", text: `Lãnh đạo nào dưới đây quê ở ${p.hometown}?`, sub: "",
           answer: p.name, options: shuffle([p.name, ...wrong]),
-          explain: `${p.name} (${mainPos(p)}) quê ${p.hometownDetail ? lc(p.hometownDetail) : p.hometown}.` };
+          explain: `${p.name} (${mainPos(p)}) quê ${homeText(p)}.` };
       }
     }
   };
 
-  const settings = { types: ["hometown", "position", "who", "fromWhere"], count: 10 };
+  const settings = { types: ["hometown", "oldProvince", "position", "who", "fromWhere"], count: 10 };
   let quiz = null;
 
   function startScreen() {

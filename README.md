@@ -6,7 +6,8 @@ Website tĩnh tra cứu **chức vụ** và **quê quán** của quan chức, l�
 - Tìm kiếm không dấu theo tên, chức vụ, quê quán
 - Lọc theo cơ quan (Bộ Chính trị, Ban Bí thư, Nhà nước, Chính phủ, Quốc hội, Tư pháp) và theo tỉnh/thành
 - Thống kê lãnh đạo theo quê quán
-- Quiz trắc nghiệm (`quiz.html`): quê quán, chức vụ, "ai là ai", đồng hương
+- Quê quán hiển thị kèm tỉnh/thành cũ trước sáp nhập 2025 (trường `oldProvince`)
+- Quiz trắc nghiệm (`quiz.html`): quê quán, tỉnh cũ, chức vụ, "ai là ai", đồng hương
 - Giao diện sáng/tối, dùng tốt trên điện thoại
 
 ## Cấu trúc
