@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lãnh đạo Thế giới</title>
+<meta name="description" content="Tra cứu chức vụ, quê quán của quan chức, lãnh đạo các quốc gia — bắt đầu với Việt Nam.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f1; --surface: #ffffff; --surface-2: #efede6; --text: #1c1b18; --muted: #6b675e;
+    --line: #e1ddd2; --accent: #b3261e; --accent-soft: #fbe9e7; --gold: #a86f00; --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141312; --surface: #1e1d1b; --surface-2: #2a2825; --text: #f0ede6; --muted: #a39e93;
+      --line: #34322e; --accent: #ff7a6e; --accent-soft: #3a1f1c; --gold: #e3b04b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141312; --surface: #1e1d1b; --surface-2: #2a2825; --text: #f0ede6; --muted: #a39e93;
+    --line: #34322e; --accent: #ff7a6e; --accent-soft: #3a1f1c; --gold: #e3b04b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Be Vietnam Pro", system-ui, sans-serif; line-height: 1.5; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 28px 0 8px; }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  h1 { font-size: clamp(1.5rem, 4vw, 2.1rem); margin: 0; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin: 4px 0 0; }
+  .theme-btn { border: 1px solid var(--line); background: var(--surface); color: var(--text); border-radius: 999px; padding: 6px 12px; cursor: pointer; font: inherit; }
+  .countries { display: flex; gap: 8px; overflow-x: auto; padding: 16px 0 4px; scrollbar-width: none; }
+  .country { flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--text); border-radius: 999px; padding: 8px 14px; font: inherit; cursor: pointer; white-space: nowrap; }
+  .country[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .country:disabled { opacity: .5; cursor: not-allowed; }
+  .country small { font-size: .72rem; opacity: .85; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 16px 0; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+  .stat b { display: block; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+  .stat span { color: var(--muted); font-size: .85rem; }
+  .controls { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 10px 0; display: grid; gap: 10px; border-bottom: 1px solid var(--line); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  input[type=search], select { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; min-width: 0; }
+  input[type=search] { flex: 1 1 240px; }
+  select { flex: 0 1 220px; }
+  .chip { border: 1px solid var(--line); background: var(--surface); color: var(--text); border-radius: 999px; padding: 5px 12px; font: inherit; font-size: .9rem; cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .tabs { display: flex; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 10px; width: fit-content; }
+  .tab { border: 0; background: transparent; color: var(--muted); font: inherit; padding: 6px 14px; border-radius: 8px; cursor: pointer; }
+  .tab[aria-selected="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .count { color: var(--muted); font-size: .9rem; margin: 14px 0 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; padding-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .card-head { display: flex; gap: 12px; align-items: center; }
+  .avatar { flex: none; width: 46px; height: 46px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 700; }
+  .card h3 { margin: 0; font-size: 1.08rem; }
+  .meta { color: var(--muted); font-size: .85rem; }
+  .pos { margin: 0; padding-left: 18px; font-size: .93rem; }
+  .pos li:first-child { font-weight: 600; }
+  .home { display: flex; gap: 8px; align-items: baseline; background: var(--surface-2); border-radius: 10px; padding: 8px 10px; font-size: .92rem; }
+  .home .lbl { color: var(--muted); font-size: .8rem; flex: none; }
+  .home button { all: unset; cursor: pointer; font-weight: 600; color: var(--gold); }
+  .home button:hover { text-decoration: underline; }
+  .home .detail { color: var(--muted); font-size: .82rem; }
+  .unknown { color: var(--muted); font-style: italic; font-weight: 400; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: .75rem; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--muted); }
+  .note { font-size: .83rem; color: var(--muted); margin: 0; }
+  .prov { display: grid; gap: 8px; padding-bottom: 24px; }
+  .prov-row { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: start; }
+  .prov-name { font-weight: 600; }
+  .prov-name small { display: block; color: var(--muted); font-weight: 400; }
+  .bar { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
+  .bar i { display: block; height: 100%; background: var(--gold); border-radius: 99px; }
+  .names { display: flex; flex-wrap: wrap; gap: 6px; }
+  .names button { font: inherit; font-size: .85rem; border: 1px solid var(--line); background: var(--surface-2); color: var(--text); border-radius: 8px; padding: 2px 8px; cursor: pointer; }
+  .empty { text-align: center; color: var(--muted); padding: 40px 0; }
+  footer { border-top: 1px solid var(--line); padding: 20px 0 40px; color: var(--muted); font-size: .88rem; }
+  footer ol { padding-left: 20px; }
+  footer li { margin: 3px 0; overflow-wrap: anywhere; }
+  @media (max-width: 560px) {
+    .prov-row { grid-template-columns: 1fr; gap: 6px; }
+    select { flex: 1 1 100%; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top">
+      <div>
+        <h1>Lãnh đạo Thế giới</h1>
+        <p class="sub">Chức vụ và quê quán của quan chức, lãnh đạo các quốc gia.</p>
+      </div>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Đổi giao diện sáng/tối">Sáng / Tối</button>
+    </div>
+    <nav class="countries" id="countries" aria-label="Chọn quốc gia"></nav>
+  </header>
+
+  <section class="stats" id="stats"></section>
+
+  <section class="controls">
+    <div class="row">
+      <input type="search" id="q" placeholder="Tìm theo tên, chức vụ, quê quán…" aria-label="Tìm kiếm">
+      <select id="prov" aria-label="Lọc theo quê quán"></select>
+    </div>
+    <div class="row" id="chips"></div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-view="cards">Danh sách</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="prov">Theo quê quán</button>
+    </div>
+  </section>
+
+  <p class="count" id="count"></p>
+  <main id="main"></main>
+
+  <footer>
+    <p id="updated"></p>
+    <p>Quê quán ghi theo đơn vị hành chính sau sắp xếp năm 2025; ô “Chưa cập nhật” là thông tin chưa tìm được nguồn xác minh. Phát hiện sai sót? Hãy mở issue hoặc pull request trên GitHub.</p>
+    <details>
+      <summary>Nguồn tham khảo</summary>
+      <ol id="sources"></ol>
+    </details>
+  </footer>
+</div>
+
+<script src="data/vn.js"></script>
+<script>
+(function () {
+  // Danh sách quốc gia dự kiến. Thêm dữ liệu: tạo data/<mã>.js và đặt ready: true.
+  const COUNTRIES = [
+    { code: "vn", name: "Việt Nam", flag: "🇻🇳", ready: true },
+    { code: "cn", name: "Trung Quốc", flag: "🇨🇳" },
+    { code: "us", name: "Hoa Kỳ", flag: "🇺🇸" },
+    { code: "jp", name: "Nhật Bản", flag: "🇯🇵" },
+    { code: "kr", name: "Hàn Quốc", flag: "🇰🇷" },
+    { code: "la", name: "Lào", flag: "🇱🇦" },
+    { code: "kh", name: "Campuchia", flag: "🇰🇭" },
+    { code: "ru", name: "Nga", flag: "🇷🇺" }
+  ];
+
+  const $ = (s) => document.querySelector(s);
+  const norm = (s) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase();
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const initials = (n) => { const p = n.split(" "); return (p.length > 1 ? p[p.length - 2][0] + p[p.length - 1][0] : p[0][0]).toUpperCase(); };
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+
+  const state = { country: "vn", q: "", prov: "", group: "", view: "cards" };
+
+  // Theme
+  const savedTheme = store.get("theme");
+  if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+  $("#themeBtn").addEventListener("click", () => {
+    const dark = document.documentElement.dataset.theme
+      ? document.documentElement.dataset.theme === "dark"
+      : matchMedia("(prefers-color-scheme: dark)").matches;
+    const next = dark ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    store.set("theme", next);
+  });
+
+  function data() { return window.LEADERS[state.country]; }
+
+  function renderCountries() {
+    $("#countries").innerHTML = COUNTRIES.map((c) =>
+      `<button class="country" type="button" data-code="${c.code}" aria-pressed="${c.code === state.country}" ${c.ready ? "" : "disabled"}>
+        ${c.flag} ${esc(c.name)} ${c.ready ? "" : "<small>· sắp có</small>"}</button>`).join("");
+    $("#countries").onclick = (e) => {
+      const b = e.target.closest("button[data-code]");
+      if (!b || b.disabled) return;
+      state.country = b.dataset.code; state.prov = ""; state.group = "";
+      init();
+    };
+  }
+
+  function renderStats() {
+    const d = data(), ppl = d.people;
+    const provs = new Set(ppl.map((p) => p.hometown).filter(Boolean));
+    const women = ppl.filter((p) => p.gender === "Nữ").length;
+    const top = topProvince(ppl);
+    $("#stats").innerHTML = [
+      [ppl.length, "nhân vật"],
+      [ppl.filter((p) => p.groups.includes("dang")).length, "Ủy viên Bộ Chính trị"],
+      [provs.size, "tỉnh/thành quê quán"],
+      [women, "lãnh đạo nữ"],
+      [top ? `${top[0]}` : "—", top ? `nhiều nhất (${top[1]} người)` : ""]
+    ].map(([b, s]) => `<div class="stat"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("");
+  }
+
+  function topProvince(ppl) {
+    const m = {};
+    ppl.forEach((p) => { if (p.hometown) m[p.hometown] = (m[p.hometown] || 0) + 1; });
+    return Object.entries(m).sort((a, b) => b[1] - a[1])[0];
+  }
+
+  function renderFilters() {
+    const d = data();
+    const provs = [...new Set(d.people.map((p) => p.hometown).filter(Boolean))].sort((a, b) => a.localeCompare(b, "vi"));
+    $("#prov").innerHTML = `<option value="">Tất cả quê quán</option>` +
+      provs.map((p) => `<option ${p === state.prov ? "selected" : ""}>${esc(p)}</option>`).join("");
+    const chips = [["", "Tất cả"], ...Object.entries(d.groups)];
+    $("#chips").innerHTML = chips.map(([k, v]) =>
+      `<button class="chip" type="button" data-g="${k}" aria-pressed="${k === state.group}">${esc(v)}</button>`).join("");
+  }
+
+  function filtered() {
+    const q = norm(state.q);
+    return data().people
+      .filter((p) => !state.group || p.groups.includes(state.group))
+      .filter((p) => !state.prov || p.hometown === state.prov)
+      .filter((p) => !q || norm([p.name, p.hometown, p.hometownDetail, p.positions.join(" "), p.note].join(" ")).includes(q))
+      .sort((a, b) => a.rank - b.rank);
+  }
+
+  function card(p) {
+    const d = data();
+    const home = p.hometown
+      ? `<button type="button" data-prov="${esc(p.hometown)}">${esc(p.hometown)}</button>${p.hometownDetail ? ` <span class="detail">· ${esc(p.hometownDetail)}</span>` : ""}`
+      : `<span class="unknown">Chưa cập nhật</span>`;
+    return `<article class="card">
+      <div class="card-head">
+        <div class="avatar" aria-hidden="true">${esc(initials(p.name))}</div>
+        <div><h3>${esc(p.name)}</h3>
+          <div class="meta">${p.born ? "Sinh " + esc(p.born) : "Năm sinh chưa cập nhật"} · ${esc(p.gender)}</div></div>
+      </div>
+      <ul class="pos">${p.positions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+      <div class="home"><span class="lbl">Quê quán</span><span>${home}</span></div>
+      ${p.note ? `<p class="note">${esc(p.note)}</p>` : ""}
+      <div class="tags">${p.groups.map((g) => `<span class="tag">${esc(d.groups[g])}</span>`).join("")}</div>
+    </article>`;
+  }
+
+  function renderProvinces(list) {
+    const m = {};
+    list.forEach((p) => { const k = p.hometown || "Chưa cập nhật"; (m[k] = m[k] || []).push(p); });
+    const rows = Object.entries(m).sort((a, b) => (a[0] === "Chưa cập nhật") - (b[0] === "Chưa cập nhật") || b[1].length - a[1].length || a[0].localeCompare(b[0], "vi"));
+    const max = Math.max(...rows.filter((r) => r[0] !== "Chưa cập nhật").map((r) => r[1].length), 1);
+    return `<div class="prov">${rows.map(([k, ps]) => `
+      <div class="prov-row">
+        <div class="prov-name">${esc(k)}<small>${ps.length} người</small></div>
+        <div><div class="bar"><i style="width:${Math.min(ps.length / max, 1) * 100}%"></i></div>
+          <div class="names">${ps.map((p) => `<button type="button" data-name="${esc(p.name)}" title="${esc(p.positions[0])}">${esc(p.name)}</button>`).join("")}</div></div>
+      </div>`).join("")}</div>`;
+  }
+
+  function render() {
+    const list = filtered();
+    $("#count").textContent = `Hiển thị ${list.length} / ${data().people.length} người`;
+    if (!list.length) { $("#main").innerHTML = `<p class="empty">Không tìm thấy kết quả phù hợp.</p>`; return; }
+    $("#main").innerHTML = state.view === "cards"
+      ? `<div class="grid">${list.map(card).join("")}</div>`
+      : renderProvinces(list);
+  }
+
+  function renderFooter() {
+    const d = data();
+    const [y, mo, da] = d.updated.split("-");
+    $("#updated").textContent = `${d.flag} ${d.country} — dữ liệu cập nhật đến ${da}/${mo}/${y}.`;
+    $("#sources").innerHTML = d.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("");
+  }
+
+  // Events
+  $("#q").addEventListener("input", (e) => { state.q = e.target.value; render(); });
+  $("#prov").addEventListener("change", (e) => { state.prov = e.target.value; render(); });
+  $("#chips").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-g]"); if (!b) return;
+    state.group = b.dataset.g; renderFilters(); render();
+  });
+  document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => {
+    state.view = t.dataset.view;
+    document.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", x === t));
+    render();
+  }));
+  $("#main").addEventListener("click", (e) => {
+    const pv = e.target.closest("[data-prov]");
+    if (pv) { state.prov = pv.dataset.prov; renderFilters(); render(); window.scrollTo({ top: $(".controls").offsetTop, behavior: "smooth" }); return; }
+    const nm = e.target.closest("[data-name]");
+    if (nm) {
+      state.q = nm.dataset.name; $("#q").value = state.q; state.view = "cards";
+      document.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", x.dataset.view === "cards"));
+      render();
+    }
+  });
+
+  function init() { renderCountries(); renderStats(); renderFilters(); render(); renderFooter(); }
+  init();
+})();
+</script>
+</body>
+</html>
