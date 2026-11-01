@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quiz Lãnh đạo</title>
+<title>Quiz Chính trị</title>
 <meta name="description" content="Trắc nghiệm về chức vụ và quê quán của lãnh đạo Việt Nam.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -64,7 +64,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Quiz Lãnh đạo</h1>
+    <h1>Quiz Chính trị</h1>
     <a class="back" href="./">← Tra cứu</a>
   </header>
   <main id="app" class="panel"></main>
@@ -89,71 +89,59 @@
   const allHomes = [...new Set(withHome.map((p) => p.hometown))];
   const withOld = people.filter((p) => p.oldProvince);
   const allOld = [...new Set(withOld.map((p) => p.oldProvince))];
+  // Chỉ hỏi tỉnh cũ khi tên tỉnh thực sự đổi (bỏ câu hiển nhiên kiểu "Hưng Yên → Hưng Yên").
+  const changed = withOld.filter((p) => p.oldProvince !== p.hometown);
   const homeText = (p) => (p.hometownDetail ? lc(p.hometownDetail) : p.hometown) + (p.oldProvince ? ` (tỉnh cũ: ${p.oldProvince})` : "");
   const mainPos = (p) => p.positions[0];
   const lc = (s) => s.charAt(0).toLowerCase() + s.slice(1);
   const posCount = {};
   people.forEach((p) => { posCount[mainPos(p)] = (posCount[mainPos(p)] || 0) + 1; });
   const allPos = Object.keys(posCount);
-  // Chỉ hỏi "Ai giữ chức X" khi chức vụ đó là duy nhất (tránh 2 đáp án đúng).
-  const uniquePos = people.filter((p) => posCount[mainPos(p)] === 1);
 
-  // Mỗi dạng câu hỏi chỉ sinh từ dữ liệu đã xác minh.
+  // Mỗi "dữ kiện" (quê của một người, tỉnh cũ của một người, chức vụ của một người) chỉ được hỏi ĐÚNG MỘT LẦN.
+  // Cách hỏi (thuận / ngược) được chọn ngẫu nhiên để đa dạng, nhưng không bao giờ hỏi lại cùng một dữ kiện.
+  const qHome = (p) => ({ kind: "Quê quán", text: `${p.name} quê ở đâu?`, sub: mainPos(p),
+    answer: p.hometown, options: shuffle([p.hometown, ...pick(allHomes.filter((h) => h !== p.hometown), 3)]),
+    explain: `${p.name} quê ${homeText(p)}.` });
+  const qSameHome = (p) => ({ kind: "Quê quán", text: `Ai dưới đây quê ở ${p.hometown}?`, sub: "",
+    answer: p.name, options: shuffle([p.name, ...pick(withHome.filter((x) => x.hometown !== p.hometown), 3).map((x) => x.name)]),
+    explain: `${p.name} (${mainPos(p)}) quê ${homeText(p)}.` });
+  const qOld = (p) => ({ kind: "Tỉnh cũ", text: `Trước sáp nhập năm 2025, quê ${p.name} thuộc tỉnh/thành nào?`,
+    sub: `Nay thuộc ${p.hometown}`,
+    answer: p.oldProvince, options: shuffle([p.oldProvince, ...pick(allOld.filter((h) => h !== p.oldProvince && h !== p.hometown), 3)]),
+    explain: `${p.name} quê ${p.oldProvince} cũ, nay thuộc ${p.hometownDetail ? lc(p.hometownDetail) : p.hometown}.` });
+  const qPos = (p) => ({ kind: "Chức vụ", text: `${p.name} hiện giữ chức vụ nào?`, sub: "",
+    answer: mainPos(p), options: shuffle([mainPos(p), ...pick(allPos.filter((x) => x !== mainPos(p)), 3)]),
+    explain: `${p.name}: ${p.positions.join("; ")}.` });
+  const qWho = (p) => ({ kind: "Chức vụ", text: `Ai đang giữ chức ${mainPos(p)}?`, sub: "",
+    answer: p.name, options: shuffle([p.name, ...pick(people.filter((x) => x.name !== p.name), 3).map((x) => x.name)]),
+    explain: `Đó là ${p.name}${p.hometown ? ", quê " + p.hometown + (p.oldProvince && p.oldProvince !== p.hometown ? ` (${p.oldProvince} cũ)` : "") : ""}.` });
+
   const TYPES = {
     hometown: {
       label: "Quê quán",
-      pool: () => withHome,
-      make(p) {
-        const wrong = pick(allHomes.filter((h) => h !== p.hometown), 3);
-        return { kind: "Quê quán", text: `${p.name} quê ở đâu?`, sub: mainPos(p),
-          answer: p.hometown, options: shuffle([p.hometown, ...wrong]),
-          explain: `${p.name} quê ${homeText(p)}.` };
-      }
-    },
-    position: {
-      label: "Chức vụ",
-      pool: () => people,
-      make(p) {
-        const wrong = pick(allPos.filter((x) => x !== mainPos(p)), 3);
-        return { kind: "Chức vụ", text: `${p.name} hiện giữ chức vụ nào?`, sub: "",
-          answer: mainPos(p), options: shuffle([mainPos(p), ...wrong]),
-          explain: `${p.name}: ${p.positions.join("; ")}.` };
-      }
-    },
-    who: {
-      label: "Ai là ai",
-      pool: () => uniquePos,
-      make(p) {
-        const wrong = pick(people.filter((x) => x.name !== p.name), 3).map((x) => x.name);
-        return { kind: "Ai là ai", text: `Ai đang giữ chức: ${mainPos(p)}?`, sub: "",
-          answer: p.name, options: shuffle([p.name, ...wrong]),
-          explain: `Đó là ${p.name}${p.hometown ? ", quê " + p.hometown + (p.oldProvince ? ` (${p.oldProvince} cũ)` : "") : ""}.` };
+      size: () => withHome.length,
+      build() {
+        const used = new Set(); // mỗi tỉnh chỉ có tối đa 1 câu "Ai quê ở X?"
+        return shuffle(withHome).map((p) => {
+          if (!used.has(p.hometown) && Math.random() < 0.35) { used.add(p.hometown); return qSameHome(p); }
+          return qHome(p);
+        });
       }
     },
     oldProvince: {
       label: "Tỉnh cũ",
-      pool: () => withOld,
-      make(p) {
-        const wrong = pick(allOld.filter((h) => h !== p.oldProvince), 3);
-        return { kind: "Tỉnh cũ", text: `Trước sáp nhập năm 2025, quê ${p.name} thuộc tỉnh/thành nào?`,
-          sub: `Nay thuộc ${p.hometown} · ${mainPos(p)}`,
-          answer: p.oldProvince, options: shuffle([p.oldProvince, ...wrong]),
-          explain: `${p.name} quê ${p.oldProvince} cũ, nay thuộc ${p.hometownDetail ? lc(p.hometownDetail) : p.hometown}.` };
-      }
+      size: () => changed.length,
+      build: () => changed.map(qOld)
     },
-    fromWhere: {
-      label: "Đồng hương",
-      pool: () => withHome,
-      make(p) {
-        const wrong = pick(withHome.filter((x) => x.hometown !== p.hometown), 3).map((x) => x.name);
-        return { kind: "Đồng hương", text: `Lãnh đạo nào dưới đây quê ở ${p.hometown}?`, sub: "",
-          answer: p.name, options: shuffle([p.name, ...wrong]),
-          explain: `${p.name} (${mainPos(p)}) quê ${homeText(p)}.` };
-      }
+    position: {
+      label: "Chức vụ",
+      size: () => people.length,
+      build: () => people.map((p) => (posCount[mainPos(p)] === 1 && Math.random() < 0.5 ? qWho(p) : qPos(p)))
     }
   };
 
-  const settings = { types: ["hometown", "oldProvince", "position", "who", "fromWhere"], count: 10 };
+  const settings = { types: ["hometown", "oldProvince", "position"], count: 10 };
   let quiz = null;
 
   function startScreen() {
@@ -183,16 +171,11 @@
     app.querySelector("#go").onclick = start;
   }
 
-  // Mỗi (dạng câu hỏi, người) là một câu duy nhất → "Tất cả" = ôn trọn bộ, không trùng.
-  function allPairs() {
-    return settings.types.flatMap((t) => TYPES[t].pool().map((p) => [t, p]));
-  }
-  function poolSize() { return allPairs().length; }
+  function poolSize() { return settings.types.reduce((n, t) => n + TYPES[t].size(), 0); }
 
   function start() {
-    const pairs = shuffle(allPairs());
-    const chosen = settings.count ? pairs.slice(0, settings.count) : pairs;
-    const qs = chosen.map(([t, p]) => TYPES[t].make(p));
+    const all = shuffle(settings.types.flatMap((t) => TYPES[t].build()));
+    const qs = settings.count ? all.slice(0, settings.count) : all;
     quiz = { qs, i: 0, score: 0, answers: [] };
     question();
   }
